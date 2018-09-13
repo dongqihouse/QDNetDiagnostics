@@ -1,0 +1,16 @@
+PODS:
+  - QDNetDiagnostics (0.1.0)
+
+DEPENDENCIES:
+  - QDNetDiagnostics (from `../`)
+
+EXTERNAL SOURCES:
+  QDNetDiagnostics:
+    :path: "../"
+
+SPEC CHECKSUMS:
+  QDNetDiagnostics: 394b5574e39a4a2082e391e920d93f579a9a695a
+
+PODFILE CHECKSUM: 7eba800444ebb8a7b5cba1e7a584ca9dff3c0429
+
+COCOAPODS: 1.5.0

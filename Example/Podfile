@@ -1,0 +1,11 @@
+use_frameworks!
+
+target 'QDNetDiagnostics_Example' do
+  pod 'QDNetDiagnostics', :path => '../'
+
+  target 'QDNetDiagnostics_Tests' do
+    inherit! :search_paths
+
+    
+  end
+end
