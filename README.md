@@ -1,6 +1,12 @@
 # QDNetDiagnostics
 iOS网络测试小工具
 
+依赖
+```swift
+CoreTelephony.framework
+libresolv.tbd
+```
+
 使用
 ```swift
 self.netDiagnostics = [[QDNetDiagnostics alloc] initWithHostName:@"wwww.baidu.com"];
