@@ -324,9 +324,9 @@ static uint16_t in_cksum(const void *buffer, size_t bufferLen) {
 //    NSLog(@"set recv timeout %d err %d", ret, errno);
 }
 
-- (void)setTTL:(int)ttl
+- (void)setTTL:(int)ttl timeout:(NSTimeInterval) timeout
 {
-    [self setTimeout:3];
+    [self setTimeout:timeout];
     setsockopt(CFSocketGetNative(self.socket), IPPROTO_IP, IP_TTL, &ttl, sizeof(ttl));
     
 }

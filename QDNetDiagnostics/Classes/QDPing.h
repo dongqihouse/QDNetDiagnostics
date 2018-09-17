@@ -8,10 +8,9 @@
 
 #import <Foundation/Foundation.h>
 #import "QDSimplePing.h"
+#import "QDNetServerProtocol.h"
 
-typedef void(^PingCallback)(NSString *info, NSInteger flag);
-
-@interface QDPing : NSObject
+@interface QDPing : NSObject<QDNetServerProtocol>
 
 @property(nonatomic, strong) NSString *hostName;
 
@@ -19,5 +18,5 @@ typedef void(^PingCallback)(NSString *info, NSInteger flag);
 
 - (instancetype)initWithHostName:(NSString *)hostName NS_DESIGNATED_INITIALIZER;
 
-- (void)pingAndCallback:(PingCallback) callback;
+- (void)startNetServerAndCallback:(NetCallback) callback;
 @end

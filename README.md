@@ -20,7 +20,7 @@ it, simply add the following line to your Podfile:
 pod 'QDNetDiagnostics'
 ```
 
-## Installation manual
+## Manual Installation 
 依赖
 ```swift
 CoreTelephony.framework
@@ -29,15 +29,34 @@ libresolv.tbd
 
 ## Usage
 
-```swift
-self.netDiagnostics = [[QDNetDiagnostics alloc] initWithHostName:@"wwww.baidu.com"];
+```Objc
+// device info ping and traceroute
+self.netDiagnostics = [[QDNetDiagnostics alloc] initWithHostName:@"www.suning.com"];
+
 [self.netDiagnostics startDiagnosticAndNetInfo:^(NSString *info) {
 NSLog(@"%@",info);
 }];
+
+// ping
+//    [self.netDiagnostics startPingAndCallback:^(NSString *info) {
+//        NSLog(@"%@",info);
+//    }];
+
+//traceroute
+//    [self.netDiagnostics startTracerouteAndCallback:^(NSString *info) {
+//        NSLog(@"%@",info);
+//    }];
 ```
+## Update
+- 18.9.17
+1 optimize code
+2 add ping and traceroute api in QDNetDiagnostics
 
 ## Result
 ![结果](result.png)
+
+## UML
+![结果](diagram.png)
 
 ## Author
 

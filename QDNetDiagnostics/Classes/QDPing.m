@@ -7,12 +7,16 @@
 //
 
 #import "QDPing.h"
+
+#define kSequenceNumberMax 9
+#define kpingTimeout 1.5
+
 @interface QDPing()<QDSimplePingDelegate>
 
 @property (nonatomic, strong) NSDate *startDate;
 @property (nonatomic, assign) NSInteger sequenceNumber;
 
-@property (nonatomic, copy) PingCallback callback;
+@property (nonatomic, copy) NetCallback callback;
 @property (nonatomic, strong) QDSimplePing *pinger;
 @property (nonatomic, strong) NSTimer *timeoutTimer;
 @end
@@ -27,7 +31,7 @@
     return self;
 }
 
-- (void)pingAndCallback:(PingCallback) callback {
+- (void)startNetServerAndCallback:(NetCallback) callback; {
     self.callback = callback;
     self.pinger = [[QDSimplePing alloc] initWithHostName:self.hostName];
     self.pinger.delegate = self;
@@ -42,14 +46,15 @@
     
     [self.pinger sendPingWithData:nil];
     self.startDate = [NSDate date];
-    self.timeoutTimer = [NSTimer scheduledTimerWithTimeInterval:1 repeats:YES block:^(NSTimer * _Nonnull timer) {
+    self.timeoutTimer = [NSTimer scheduledTimerWithTimeInterval:kpingTimeout repeats:YES block:^(NSTimer * _Nonnull timer) {
+        self.sequenceNumber += 1;
         NSString *info = [NSString stringWithFormat:@"#%ld Request timeout for icmp_seq ",(long)self.sequenceNumber];
-        if (self.sequenceNumber < 10) {
-            self.callback(info, 1);
+        if (self.sequenceNumber < kSequenceNumberMax) {
+            self.callback(info, InfoFlagOn);
             [self startPing];
         }else {
-            NSString *endInfo = [NSString stringWithFormat:@"end ping %@ =====",self.hostName];
-            self.callback(endInfo, -1);
+            NSString *endInfo = [NSString stringWithFormat:@"end ping %@ ",self.hostName];
+            self.callback(endInfo, InfoFlagEnd);
             [self stopPing];
         }
         
@@ -65,14 +70,14 @@
 
 #pragma mark -- simplePing delegate
 - (void)simplePing:(QDSimplePing *)pinger didStartWithAddress:(NSData *)address {
-    NSString *info = [NSString stringWithFormat:@"begin ping %@ =====",self.hostName];
-    self.callback(info, 1);
+    NSString *info = [NSString stringWithFormat:@"begin ping %@ ",self.hostName];
+    self.callback(info, InfoFlagOn);
     [self startPing];
 }
 
 - (void)simplePing:(QDSimplePing *)pinger didFailWithError:(NSError *)error {
     NSString *errorInfo = [NSString stringWithFormat:@"error: %@",error.description];
-    self.callback(errorInfo, -1);
+    self.callback(errorInfo, InfoFlagEnd);
     [self stopPing];
 }
 
@@ -81,13 +86,13 @@
     self.sequenceNumber = sequenceNumber;
     NSString *info = [NSString stringWithFormat:@"#%u received, size=%zu time=%fms", sequenceNumber, packet.length, diffTime*1000];
     
-    if (sequenceNumber < 9) {
-        self.callback(info, 1);
+    if (sequenceNumber < kSequenceNumberMax) {
+        self.callback(info, InfoFlagOn);
         [self startPing];
     } else {
-        self.callback(info, 1);
-        NSString *endInfo = [NSString stringWithFormat:@"end ping %@ =====",self.hostName];
-        self.callback(endInfo, -1);
+        self.callback(info, InfoFlagOn);
+        NSString *endInfo = [NSString stringWithFormat:@"end ping %@ ",self.hostName];
+        self.callback(endInfo, InfoFlagEnd);
         [self stopPing];
     }
 }

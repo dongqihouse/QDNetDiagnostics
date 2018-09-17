@@ -8,8 +8,7 @@
 
 #import "QDNetDiagnostics.h"
 #import "QDNetDeviceInfo.h"
-#import "QDTraceroute.h"
-#import "QDPing.h"
+#import "QDNetServerProtocol.h"
 
 #import <UIKit/UIKit.h>
 #import <CoreTelephony/CTCarrier.h>
@@ -19,9 +18,11 @@
 @interface QDNetDiagnostics()
 
 @property (nonatomic, strong) NSString *hostName;
-@property (nonatomic, strong) QDPing *ping;
-@property (nonatomic, strong) QDTraceroute *traceroute;
+@property (nonatomic, strong) id<QDNetServerProtocol> ping;
+@property (nonatomic, strong) id<QDNetServerProtocol> traceroute;
 @property (nonatomic, copy) Callback callback;
+@property (nonatomic, copy) Callback pingCallback;
+@property (nonatomic, copy) Callback tracerouteCallback;
 @end
 
 @implementation QDNetDiagnostics
@@ -30,6 +31,8 @@
     self = [super init];
     if (self) {
         self.hostName = hostName;
+        self.ping = [[NSClassFromString(@"QDPing") alloc] initWithHostName:hostName];
+        self.traceroute = [[NSClassFromString(@"QDTraceroute") alloc] initWithHostName:hostName];
     }
     return self;
 }
@@ -37,56 +40,56 @@
 - (void)startDiagnosticAndNetInfo:(Callback) callback {
     self.callback = callback;
 
-    callback(@"开始网络诊断");
+    callback(@"begin diagnostics");
     
     NSDictionary *dicBundle = [[NSBundle mainBundle] infoDictionary];
     NSString *appName = [dicBundle objectForKey:@"CFBundleDisplayName"];
-    callback([NSString stringWithFormat:@"应用名：%@",appName]);
+    callback([NSString stringWithFormat:@"appName：%@",appName]);
     
     NSString *appVersion = [dicBundle objectForKey:@"CFBundleShortVersionString"];
-    callback([NSString stringWithFormat:@"版本号：%@",appVersion]);
+    callback([NSString stringWithFormat:@"appVersion：%@",appVersion]);
     
     UIDevice *device = [UIDevice currentDevice];
-    callback([NSString stringWithFormat:@"机器类型: %@", [device systemName]]);
-    callback([NSString stringWithFormat:@"系统版本: %@", [device systemVersion]]);
+    callback([NSString stringWithFormat:@"systemName: %@", [device systemName]]);
+    callback([NSString stringWithFormat:@"systemVersion: %@", [device systemVersion]]);
     
     NSString *carrierName;
-    NSString *ISOCountryCode;
-    NSString *MobileCountryCode;
-    NSString *MobileNetCode;
+    NSString *isoCountryCode;
+    NSString *mobileCountryCode;
+    NSString *mobileNetworkCode;
     CTTelephonyNetworkInfo *netInfo = [[CTTelephonyNetworkInfo alloc] init];
     CTCarrier *carrier = [netInfo subscriberCellularProvider];
     if (carrier != NULL) {
         carrierName = [carrier carrierName];
-        ISOCountryCode = [carrier isoCountryCode];
-        MobileCountryCode = [carrier mobileCountryCode];
-        MobileNetCode = [carrier mobileNetworkCode];
+        isoCountryCode = [carrier isoCountryCode];
+        mobileCountryCode = [carrier mobileCountryCode];
+        mobileNetworkCode = [carrier mobileNetworkCode];
     } else {
         carrierName = @"";
-        ISOCountryCode = @"";
-        MobileCountryCode = @"";
-        MobileNetCode = @"";
+        isoCountryCode = @"";
+        mobileCountryCode = @"";
+        mobileNetworkCode = @"";
     }
-    callback([NSString stringWithFormat:@"运营商: %@", carrierName]);
-    callback([NSString stringWithFormat:@"ISOCountryCode: %@", ISOCountryCode]);
-    callback([NSString stringWithFormat:@"MobileCountryCode: %@", MobileCountryCode]);
-    callback([NSString stringWithFormat:@"MobileNetCode: %@", MobileNetCode]);
+    callback([NSString stringWithFormat:@"carrierName: %@", carrierName]);
+    callback([NSString stringWithFormat:@"isoCountryCode: %@", isoCountryCode]);
+    callback([NSString stringWithFormat:@"mobileCountryCode: %@", mobileCountryCode]);
+    callback([NSString stringWithFormat:@"mobileNetworkCode: %@", mobileNetworkCode]);
     
-    callback([NSString stringWithFormat:@"测试域名：%@",self.hostName]);
+    callback([NSString stringWithFormat:@"hostName：%@",self.hostName]);
     
     NSString *ip = [QDNetDeviceInfo getIPWithHostName:self.hostName];
-    callback([NSString stringWithFormat:@"ip地址：%@",ip]);
+    callback([NSString stringWithFormat:@"ipAddress：%@",ip]);
     
     NSString *dns = [QDNetDeviceInfo outPutDNSServers];
-    callback([NSString stringWithFormat:@"dns地址：%@",dns]);
+    callback([NSString stringWithFormat:@"dnsAddress：%@",dns]);
     
-    self.ping = [[QDPing alloc] initWithHostName:self.hostName];
-    self.traceroute = [[QDTraceroute alloc] initWithHostName:self.hostName];
-    [self.ping pingAndCallback:^(NSString *info, NSInteger flag) {
-        if (flag == -1) {
-            [self.traceroute traceRouteAndCallback:^(NSString *info_also, NSInteger flag) {
+    
+    [self.ping startNetServerAndCallback:^(NSString *info, NSInteger flag) {
+        if (flag == InfoFlagEnd) {
+            [self.traceroute startNetServerAndCallback:^(NSString *info_also, NSInteger flag) {
                 self.callback(info_also);
-                if (flag == -1) {
+                if (flag == InfoFlagEnd) {
+                    callback(@"end diagnostics");
                     [self stop];
                 }
             }];
@@ -95,14 +98,37 @@
         self.callback(info);
 
     }];
-    
-    
-    
+}
+
+- (void)startPingAndCallback:(Callback) callback {
+    self.pingCallback = callback;
+    [self.ping startNetServerAndCallback:^(NSString *info, NSInteger flag) {
+        if (flag == InfoFlagOn) {
+            self.pingCallback(info);
+        }else {
+            self.pingCallback(info);
+            [self stop];
+        }
+    }];
+}
+
+- (void)startTracerouteAndCallback:(Callback) callback {
+    self.tracerouteCallback = callback;
+    [self.traceroute startNetServerAndCallback:^(NSString *info, NSInteger flag) {
+        if (flag == InfoFlagOn) {
+            self.tracerouteCallback(info);
+        }else {
+            self.tracerouteCallback(info);
+            [self stop];
+        }
+    }];
 }
 
 - (void)stop {
     self.ping = nil;
     self.traceroute = nil;
     self.callback = nil;
+    self.pingCallback = nil;
+    self.tracerouteCallback = nil;
 }
 @end

@@ -12,6 +12,7 @@
 
 #import "QDNetDeviceInfo.h"
 #import "QDNetDiagnostics.h"
+#import "QDNetServerProtocol.h"
 #import "QDPing.h"
 #import "QDSimplePing.h"
 #import "QDTraceroute.h"

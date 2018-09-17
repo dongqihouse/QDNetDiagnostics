@@ -19,4 +19,8 @@ typedef void(^Callback)(NSString *);
 - (instancetype)initWithHostName:(NSString *)hostName NS_DESIGNATED_INITIALIZER;
 
 - (void)startDiagnosticAndNetInfo:(Callback) callback;
+
+- (void)startPingAndCallback:(Callback) callback;
+
+- (void)startTracerouteAndCallback:(Callback) callback;
 @end

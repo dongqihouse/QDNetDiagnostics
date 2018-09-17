@@ -9,6 +9,7 @@
 #import "QDViewController.h"
 #import "QDNetDiagnostics.h"
 
+
 @interface QDViewController ()
 
 @property (nonatomic, strong) QDNetDiagnostics *netDiagnostics;
@@ -20,10 +21,26 @@
 {
     [super viewDidLoad];
 	// Do any additional setup after loading the view, typically from a nib.
-    self.netDiagnostics = [[QDNetDiagnostics alloc] initWithHostName:@"wwww.baidu.com"];
+    
+    // device info ping and traceroute
+    self.netDiagnostics = [[QDNetDiagnostics alloc] initWithHostName:@"www.suning.com"];
+    
     [self.netDiagnostics startDiagnosticAndNetInfo:^(NSString *info) {
         NSLog(@"%@",info);
     }];
+    
+    // ping
+//    [self.netDiagnostics startPingAndCallback:^(NSString *info) {
+//        NSLog(@"%@",info);
+//    }];
+    
+    //traceroute
+//    [self.netDiagnostics startTracerouteAndCallback:^(NSString *info) {
+//        NSLog(@"%@",info);
+//    }];
+    
+
+  
 }
 
 - (void)didReceiveMemoryWarning

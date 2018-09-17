@@ -7,11 +7,11 @@
 //
 
 #import <Foundation/Foundation.h>
+#import "QDNetServerProtocol.h"
 #import "QDSimplePing.h"
 
-typedef void(^TracerouteCallback)(NSString *info, NSInteger flag);
 
-@interface QDTraceroute : NSObject
+@interface QDTraceroute : NSObject<QDNetServerProtocol>
 
 @property(nonatomic, strong) NSString *hostName;
 
@@ -19,5 +19,5 @@ typedef void(^TracerouteCallback)(NSString *info, NSInteger flag);
 
 - (instancetype)initWithHostName:(NSString *)hostName NS_DESIGNATED_INITIALIZER;
 
-- (void)traceRouteAndCallback:(TracerouteCallback) callback;
+- (void)startNetServerAndCallback:(NetCallback) callback;
 @end

@@ -8,7 +8,8 @@
 
 #import "QDTraceroute.h"
 
-#define HOPS_MAX  64
+#define kHopsMax  64
+#define kTracerouteTimeout 3
 
 @interface QDTraceroute()<QDSimplePingDelegate>
 
@@ -21,7 +22,7 @@
 @property (nonatomic, strong) QDSimplePing *tracerouter;
 
 @property (nonatomic, strong) NSString *info;
-@property (nonatomic, copy) TracerouteCallback callback;
+@property (nonatomic, copy) NetCallback callback;
 
 @end
 
@@ -35,7 +36,7 @@
     return self;
 }
 
-- (void)traceRouteAndCallback:(TracerouteCallback) callback {
+- (void)startNetServerAndCallback:(NetCallback) callback {
     self.callback = callback;
     self.tracerouter = [[QDSimplePing alloc] initWithHostName:self.hostName];
     self.tracerouter.delegate = self;
@@ -53,24 +54,24 @@
         self.info = [NSString stringWithFormat:@"%@ * " , self.info];
     }
     
-    self.callback(self.info, 1);
+    self.callback(self.info, InfoFlagOn);
     [self.timeoutTimer invalidate];
     self.timeoutTimer = nil;
     
     [self traceroute];
 }
 - (void)traceroute {
-    if (self.hopNum == HOPS_MAX) {
+    if (self.hopNum == kHopsMax) {
         [self stopTraceroute];
         return ;
     }
     self.info = @"";
     self.sendIndex = 0;
     self.hopNum += 1;
-    [self.tracerouter setTTL:(int)self.hopNum];
+    [self.tracerouter setTTL:(int)self.hopNum timeout:kTracerouteTimeout];
     [self.tracerouter traceroute];
     self.startDate = [NSDate date];
-    self.timeoutTimer = [NSTimer scheduledTimerWithTimeInterval:3 target:self selector:@selector(checkTimeout) userInfo:nil repeats:YES];
+    self.timeoutTimer = [NSTimer scheduledTimerWithTimeInterval:kTracerouteTimeout target:self selector:@selector(checkTimeout) userInfo:nil repeats:YES];
 }
 - (void)stopTraceroute {
     [self.tracerouter stop];
@@ -87,20 +88,20 @@
 #pragma mark -- simplePing delegate
 - (void)simplePing:(QDSimplePing *)pinger didStartWithAddress:(NSData *)address {
     [self traceroute];
-    NSString *info = @"begin traceroute ====";
-    self.callback(info, 1);
+    NSString *info = @"begin traceroute ";
+    self.callback(info, InfoFlagOn);
 
 }
 
 - (void)simplePing:(QDSimplePing *)pinger didFailWithError:(NSError *)error {
     NSString *errorInfo = [NSString stringWithFormat:@"error: %@",error.description];
-    self.callback(errorInfo, -1);
+    self.callback(errorInfo, InfoFlagEnd);
     [self stopTraceroute];
 }
 
 - (void)simplePing:(QDSimplePing *)pinger didReceivePingResponsePacket:(NSData *)packet sequenceNumber:(uint16_t)sequenceNumber {
-    NSString *info = @"reach the destination, traceroute finsih====";
-    self.callback(info, -1);
+    NSString *info = @"reach the destination, traceroute finsih";
+    self.callback(info, InfoFlagEnd);
     
     [self stopTraceroute];
 }
@@ -116,7 +117,7 @@
     }
     
     if (self.sendIndex == 3) {
-        self.callback(self.info, 1);
+        self.callback(self.info, InfoFlagOn);
         [self.timeoutTimer invalidate];
         self.timeoutTimer = nil;
         

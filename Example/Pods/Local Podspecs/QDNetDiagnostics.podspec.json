@@ -1,8 +1,8 @@
 {
   "name": "QDNetDiagnostics",
   "version": "0.1.0",
-  "summary": "网络测试小工具",
-  "description": "网络测试小工具",
+  "summary": "Net Diagnostics",
+  "description": "Net Diagnostics",
   "homepage": "https://github.com/dongqihouse/QDNetDiagnostics",
   "license": {
     "type": "MIT",
@@ -12,7 +12,7 @@
     "qd": "244514311@qq.com"
   },
   "source": {
-    "git": "https://github.com/dongqihouseQDNetDiagnostics.git",
+    "git": "https://github.com/dongqihouse/QDNetDiagnostics.git",
     "tag": "0.1.0"
   },
   "platforms": {

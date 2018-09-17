@@ -9,7 +9,7 @@ EXTERNAL SOURCES:
     :path: "../"
 
 SPEC CHECKSUMS:
-  QDNetDiagnostics: 394b5574e39a4a2082e391e920d93f579a9a695a
+  QDNetDiagnostics: 12c7c79bda8ec4adc594f3e2fc124592a06fe620
 
 PODFILE CHECKSUM: 7eba800444ebb8a7b5cba1e7a584ca9dff3c0429
 

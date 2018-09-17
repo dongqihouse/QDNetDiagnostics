@@ -35,6 +35,7 @@ typedef NS_ENUM(NSInteger, QDSimplePingAddressStyle) {
  *      confined to a specific thread and that thread must run its run loop.
  */
 
+
 @interface QDSimplePing : NSObject
 
 - (instancetype)init NS_UNAVAILABLE;
@@ -133,7 +134,7 @@ typedef NS_ENUM(NSInteger, QDSimplePingAddressStyle) {
 - (void)stop;
 
 /// 设置ttl
-- (void)setTTL:(int)ttl;
+- (void)setTTL:(int)ttl timeout:(NSTimeInterval) timeout;
 /// 设置好ttl 之后 开始 traceroute
 - (void)traceroute;
 /// 解析packet中的ip 地址
