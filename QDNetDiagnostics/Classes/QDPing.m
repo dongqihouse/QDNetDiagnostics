@@ -3,7 +3,7 @@
 //  QD
 //
 //  Created by apple on 2018/9/12.
-//  Copyright © 2018年 Suning. All rights reserved.
+//  Copyright © 2018年 qd. All rights reserved.
 //
 
 #import "QDPing.h"
